@@ -1,0 +1,71 @@
+<div ng-show ="isImpact" th:fragment="impact">
+<div class="col-md-9">
+<form name="impactForm" method="post" ng-submit="submitImpactCred()">
+
+<div class="well well-sm">
+<h4 style="color:white;">IMPACT credentials:</h4>
+</div>
+
+<!-- <div class="well well-sm">
+<h4>Registration Form:</h4>
+</div> -->
+
+<div class="form-group required" style="width: 35%"> 
+<label class="control-label">IMPACT username:</label> 
+<input type="text"  class="form-control input-sm" required="required" name="impactUsername" ng-model="impactDetails.impactUsername"/>
+</div>
+
+<div class="form-group required" style="width: 35%"> 
+<label class="control-label">IMPACT password:</label> 
+<input type="password"  class="form-control input-sm" required="required" name="impactPassword" ng-model="impactDetails.impactPassword"/>
+</div>
+
+<div class="form-group required" style="width: 35%"> 
+<label class="control-label">IMPACT group name:</label>
+ <input type="text"  class="form-control input-sm" required="required" name="groupName" ng-model="impactDetails.groupName"/>
+</div>
+
+<div class="form-group"> 
+<br/><br/>
+    <button type="submit" class="btn btn-default">Submit</button>
+</div>
+<center><loading ng-show="isImpact"></loading></center>
+</form>
+</div>
+</div>
+
+<div ng-show ="isWatson" th:fragment="watson">
+<div class="col-md-9">
+<form name="watsonForm" method="post" ng-submit="submitWatsonCred()">
+
+<div class="well well-sm">
+<h4 style="color:white;">WATSON credentials:</h4>
+</div>
+
+<!-- <div class="well well-sm">
+<h4>Registration Form:</h4>
+</div> -->
+
+<div class="form-group required" style="width: 35%"> 
+<label class="control-label">WATSON Org Id:</label> 
+<input type="text"  class="form-control input-sm" required="required" name="watsonOrgId" ng-model="watsonDetails.watsonOrgId"/>
+</div>
+
+<div class="form-group required" style="width: 35%"> 
+<label class="control-label">WATSON Api Key:</label> 
+<input type="text"  class="form-control input-sm" required="required" name="watsonApiKey" ng-model="watsonDetails.watsonApiKey"/>
+</div>
+
+<div class="form-group required" style="width: 35%"> 
+<label class="control-label">WATSON Api Token:</label>
+ <input type="text"  class="form-control input-sm" required="required" name="watsonApiToken" ng-model="watsonDetails.watsonApiToken"/>
+</div>
+
+<div class="form-group"> 
+<br/><br/>
+    <button type="submit" class="btn btn-default">Submit</button>
+</div>
+<center><loading ng-show="isWatson"></loading></center>
+</form>
+</div>
+</div>

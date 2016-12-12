@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName;
 
 public class MessageOutDeviceType {
 
-	private String id = "nokiaImp";
+	private String id = "nokiaImpact";
 	
 	private String description;
 	
@@ -20,6 +20,10 @@ public class MessageOutDeviceType {
 		//this.id+= "_"+getFormattedId(reg.getMake());
 		this.deviceInfo = new DeviceTypeDeviceInfo();
 		this.description = "Nokia IMPACT devices";
+	}
+
+	public MessageOutDeviceType() {
+		// TODO Auto-generated constructor stub
 	}
 
 	public String getId() {

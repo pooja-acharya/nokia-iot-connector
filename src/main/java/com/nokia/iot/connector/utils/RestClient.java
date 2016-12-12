@@ -2,6 +2,7 @@ package com.nokia.iot.connector.utils;
 
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Properties;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
@@ -29,6 +30,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.google.gson.Gson;
+import com.nokia.iot.connector.config.PropertyKeyConstants;
 import com.nokia.iot.connector.config.credentials.UserCredentials;
 /**
  * 
@@ -50,8 +52,6 @@ public class RestClient implements IRestClient {
 	@Value("${impact.group.name}")
 	private String groupName;
 	
-	//private static boolean isSSLContextSet = false;
-
 	private static RestTemplate impactRestClient = new RestTemplate();
 	
 	private RestTemplate watsonRestClient = new RestTemplate();
@@ -75,6 +75,11 @@ public class RestClient implements IRestClient {
 		return impactRestClient;
 	}
 
+	public void reloadPropertyFilePlaceHolders(Properties prop) {
+		this.orgId = prop.getProperty(PropertyKeyConstants.ORG_ID);
+		this.groupName = prop.getProperty(PropertyKeyConstants.IMPACT_GROUP_NAME);
+	}
+	
 	public RestTemplate getWatsonRestClient() {
 		SSLContext sslContext = null;
 		SSLConnectionSocketFactory sslConfactory = null;
@@ -106,6 +111,7 @@ public class RestClient implements IRestClient {
 	}
 
 	public String getImpactRestServerUrl() {
+		LOGGER.debug("retruning IMPACT URL as "+impactRestServerUrl);
 		return impactRestServerUrl;
 	}
 

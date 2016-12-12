@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" ng-app="connectorApp">
+<head lang="en">
+
+<title>Nokia-Iot Connector</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<script
+	src="http://cdn.jsdelivr.net/webjars/angularjs/1.5.3/angular.js"
+	th:src="@{/webjars/angularjs/1.5.3/angular.js}"></script>
+<script type="text/javascript"
+	th:src="@{/js/lib/angular-resource.min.js}"></script>
+
+<script
+	src="http://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"
+	th:src="@{/webjars/jquery/1.12.0/jquery.min.js}"></script>
+<script th:src="@{/js/connector.js}"></script>
+
+<script
+	src="http://cdn.jsdelivr.net/webjars/bootstrap/3.3.6/js/bootstrap.min.js"
+	th:src="@{/webjars/bootstrap/3.3.6/js/bootstrap.min.js}"></script>
+
+<script th:src="@{/js/lib/aes.js}"></script>
+
+<link
+	href="http://cdn.jsdelivr.net/webjars/bootstrap/3.3.6/css/bootstrap.min.css"
+	th:href="@{/webjars/bootstrap/3.3.6/css/bootstrap.min.css}"
+	rel="stylesheet" media="screen" />
+	
+<!-- <script src="js/angularjs/ui-bootstrap-tpls-1.3.3.js"></script> -->
+
+<style>
+label {
+	font-size: small;
+}
+.well{
+background-color: #124191;
+}
+.btn {
+background-color: #124191 !important;
+ color: white !important;
+}
+.btn-default {
+background-color: #124191 !important;
+ color: white !important;
+ border-color : #124191 !important;
+}
+.btn-default:hover, .btn-default:active, .open>.dropdown-toggle.btn-default {
+    background-color: #124191 !important;
+    color: white;
+    box-shadow: none !important;
+    border-color : #124191 !important;
+    /*set the color you want here*/
+}
+.btn-default.focus, .btn-default:focus {
+    background-color: #124191 !important;
+    border-color: #124191 !important;
+    color: white;
+}
+.btn.active, .btn:active {
+    background-image: none !important;
+    box-shadow: #124191 !important;
+    outline: 0 none !important;
+}
+.msg
+{
+    FONT-WEIGHT: bold;
+    FONT-SIZE: 14px;
+    COLOR: green;
+}
+.error
+{
+    FONT-WEIGHT: bold;
+    FONT-SIZE: 14px;
+    COLOR: red;
+}
+SPAN.msg
+{
+    FONT-WEIGHT: bold;
+    FONT-SIZE: 14px;
+    COLOR: green;
+}
+SPAN.error
+{
+    FONT-WEIGHT: bold;
+    FONT-SIZE: 14px;
+    COLOR: red;
+}
+.form-group.required .control-label:after { 
+   content:"*";
+   color:red;
+}
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    color: white;
+}
+.dropdown:hover .dropdown-menu {
+    display: block;
+}
+.dropdown-menu a:hover {background-color: #124191}
+
+#endpointDetailsTable {display: none; float: center; }
+
+.popover-content {
+height: 500px;
+overflow-y: scroll;
+}
+
+</style>
+</head>
+<body>
+
+
+<div class="well well-sm">
+<h1 style="color:white;">Nokia Iot Connector</h1>
+</div>
+<div class="container-fluid" ng-controller="connectorController">
+<ul class="nav nav-tabs">
+  <li class="active"><a href="" ng-click="showHome()">Home</a></li>
+  <li class="dropdown">
+    <a class="dropdown-toggle" data-toggle="dropdown" href="#">Setup
+    <span class="caret"></span></a>
+    <ul class="dropdown-menu">
+      <li><a href="" ng-click="showImpact()">Impact</a></li>
+      <li><a href="" ng-click="showWatson()">Watson</a></li>
+    </ul>
+  </li>
+  <!-- <li class="dropdown">
+    <a class="dropdown-toggle" data-toggle="dropdown" href="#">Operations
+    <span class="caret"></span></a>
+    <ul class="dropdown-menu">
+      <li><a href="#" ng-click="showRegistration()">Register To Impact</a></li>
+    </ul>
+  </li> -->
+</ul>
+
+	<!-- <div class="fluid-container demo-container">
+    <header>
+        <div class="row demo-header">
+		<div class="col-md-12">
+			<nav class="n-banner nokia_banner_normal" style="min-height: 60px">
+
+				<div class="n-banner-1st-filler-white"></div>
+				<div class="n-banner-1st-filler-blue"></div>
+				<div
+					class="n-banner-2nd-filler-blue hidden-xs hidden-on-blue-detached"></div>
+				<div class="n-banner-2nd-filler-gray hidden-xs"></div>
+				<div class="container-fluid">
+
+					<div class="n-banner-header">
+						<button class="n-banner-toggle collapsed"
+							data-target="#n-banner-collapse" data-toggle="collapse"
+							type="button">
+							<span class="sr-only"> Toggle navigation </span> <span
+								class="icon-bar"></span> <span class="icon-bar"></span> <span
+								class="icon-bar"></span>
+						</button>
+						<a class="n-banner-brand" href="#"> Nokia Iot Connector </a>
+					</div>
+
+					<div class="collapse n-banner-collapse" id="n-banner-collapse">
+
+						<div class="row n-banner-1st">
+
+							<div class="n-banner-right n-banner-logo-img hidden-xs">
+								<img alt="Nokia" src="./wulfdist/img/logo.png" />
+							</div>
+
+							<div class="n-banner-right n-banner-1st-gray-to-white hidden-xs">
+								<div class="gray-mask"></div>
+								<div class="white-mask"></div>
+								<div class="gray-corner"></div>
+								<div class="white-corner"></div>
+							</div>
+
+							<ul class="nav n-banner-right n-banner-nav n-banner-controls">
+                                    <li id="wulf_contacts">
+                                        <a href="#"  ng-click="logout()"
+                                           data-target="#contactsDlg">
+                                            <i class="icon icon-profile"></i>
+                                            Logout</a>
+                                    </li>
+                                </ul>
+							<div class="n-banner-right n-banner-1st-blue-to-gray hidden-xs">
+								<div class="blue-mask"></div>
+								<div class="gray-mask"></div>
+								<div class="blue-corner"></div>
+								<div class="gray-corner"></div>
+							</div>
+						</div>
+
+						<div class="row n-banner-2nd">
+							<ul class="nav n-banner-nav n-banner-tabs">
+								<li class="n-banner-3Link"><a href="#"
+									ng-click="showHome()">Home</a></li>
+
+								<li class="n-banner-3Link dropdown"><a
+									aria-expanded="false" class="n-banner-dropdown-toggle"
+									data-toggle="dropdown" href="#" role="button"> <span>Setup</span>
+										<span class="caret"></span>
+								</a>
+									<ul class="dropdown-menu" role="menu">
+										<li><a href="#" ng-click="showAuth()">
+										<span>Registration</span>
+										</a></li>
+										<li><a href="#" ng-click="showSubscription()"> 
+											<span>Subscription</span>
+										</a></li>
+										li><a href="#" ng-click="showTerminateSubscription()"
+											>
+											<span>Terminate Subscription</span>
+										</a></li
+										<li><a href="#" ng-click="showResource()">
+											<span>Resource</span>
+										</a></li>
+									</ul></li>
+
+								<li class="n-banner-3Link dropdown"><a
+									aria-expanded="false" class="n-banner-dropdown-toggle"
+									data-toggle="dropdown" href="#" role="button"> <span>Operations</span>
+										<span class="caret"></span>
+								</a>
+									<ul class="dropdown-menu" role="menu">
+									
+									<li>
+										<a href="#" id="btn-1" data-toggle="collapse" data-target="#submenu1" aria-expanded="false">Subscription Management<span class="caret"></span></a>
+										<ul class="nav collapse" role="menu" id="submenu1" aria-labelledby="btn-1">
+											<li><a href="#" ng-click="showTerminateSubs()"><span>Terminate Subscription</span></a></li>
+											<li><a href="#" ng-click="showAndGetSubsription()"><span>List Subscription</span></a></li>
+											<li><a href="#" ng-click="showAddSerialNum()"><span>Add Serial number</span></a></li>
+											<li><a href="#" ng-click="showDelSerialNum()"><span>Delete Serial number</span></a></li>
+											<li><a></a></li>
+										</ul>
+										</li>
+										
+										<li>
+										<a href="#" id="btn-2" data-toggle="collapse" data-target="#submenu2" aria-expanded="false">Endpoints Management<span class="caret"></span></a>
+										<ul class="nav collapse" role="menu" id="submenu2" aria-labelledby="btn-2">
+											<li><a href="#" ng-click="showEPAdd()"><span>Add End Point</span></a></li>
+											<li><a href="#" ng-click="showEPDel()"><span>Delete End Point</span></a></li>
+											<li><a href="#" ng-click="showEPList()"><span>List All End Points</span></a></li>
+											<li><a href="#" ng-click="showSingleEP()"><span>Get End Point details</span></a></li>
+											<li><a></a></li>
+										</ul>
+										</li>
+										
+										<li><a href="#" ng-click="showAndGetAuthentication()">
+											<span>List Registration</span>
+										</a></li>
+										<li><a href="#" ng-click="showAndGetSubsription()"> 
+										<span>List Subscription</span>
+										</a></li>
+										<li><a class="trigger right-caret" href="#" ng-click="showTerminateSubs()"> 
+										<span>Terminate Subscription</span>
+										</a>
+										</li>
+										
+										<li><a href="#" ng-click="showAndGetResource()">
+										<span>List Resource</span>
+										</a></li>
+										<li><a href="#" ng-click="showEPList()"> 
+										<span>List All End Points</span>
+										</a></li>
+										
+										
+									</ul></li>
+									
+									<li class="n-banner-3Link dropdown"><a
+									aria-expanded="false" class="n-banner-dropdown-toggle"
+									data-toggle="dropdown" href="#" role="button"> <span>Notifications</span>
+										<span class="caret"></span>
+								</a>
+									<ul class="dropdown-menu" role="menu">
+										<li><a href="#" ng-click="showReportDataList()">
+											<span>List Report Data</span>
+										</a></li>
+										<li><a href="#" ng-click="showResponseDataList()"> 
+										<span>List Response Data</span>
+										</a></li>
+										
+										<li><a href="#" ng-click="showLifecycleEventList()">
+										<span>List Lifecycle Events Data</span>
+										</a></li>
+									</ul></li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</nav>
+		</div>
+		</div>
+		</header>
+		<br></br> <br></br>
+		</div> -->
+	 <div class="col-sm-9" >
+		<br/><br/><br/>
+		<div ng-if="isImpact" th:include="html/setup :: impact"></div>
+		<div ng-if="isWatson" th:include="html/setup :: watson"></div>
+		
+		<div ng-show="isHome">
+		<div class="col-md-6 col-md-offset-4">
+        <div class="panel panel-shadow panel-blue-cap">
+            <div class="panel-body">
+                <div class="panel-section">
+			<h5>
+				<p>Platform to enter IMPACT and IBM credentials and Register the connector to IMPACT</p>
+			</h5>
+		</div>
+		</div>
+		</div>
+		</div>
+		</div>
+		
+		<div id="alertModal" class="modal fade" role="dialog" >
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<button type="button" class="close" data-dismiss="modal">&times;</button>
+							<h5 class="modal-title"></h5>
+						</div>
+						<div class="modal-body">
+							<b><p id="cssClass"></p></b>
+						</div>
+
+						<div class="modal-footer">
+					      <button type="button" class="btn btn-default" data-toggle="modal"
+					      ng-click="registerToImpact()" ng-show="showRegister">
+					      <span class="icon icon-actions-menu"></span>
+					      Register
+					      </button>
+							<button class="btn btn-default" data-dismiss="modal">
+								Close</button>
+						</div>
+
+					</div>
+				</div>
+			</div>
+			
+		</div>
+</div>
+			<!-- <span class="{{cssClass}}" ng-bind="message"></span> -->
+
+			
+
+</body>
+</html>

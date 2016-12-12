@@ -1,5 +1,7 @@
 package com.nokia.iot.connector.utils;
 
+import java.util.Properties;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
@@ -28,5 +30,7 @@ public interface IRestClient {
 	ResponseEntity<String> doPut(String uri, String payload, String restServerUrl, String authorization, RestTemplate restTemplate);
 	
 	ResponseEntity<String> doDelete(String uri, String payload, String restServerUrl, String authorization, RestTemplate restTemplate);
+	
+	public void reloadPropertyFilePlaceHolders(Properties prop);
 
 }

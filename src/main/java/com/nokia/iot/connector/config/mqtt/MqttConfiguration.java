@@ -3,14 +3,17 @@ package com.nokia.iot.connector.config.mqtt;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
+import java.util.Properties;
 
 import javax.net.ssl.SSLContext;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.integration.annotation.ServiceActivator;
@@ -23,6 +26,8 @@ import org.springframework.integration.mqtt.support.DefaultPahoMessageConverter;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 
+import com.nokia.iot.connector.config.PropertyKeyConstants;
+import com.nokia.iot.connector.outbound.service.IOutboundImpactService;
 import com.nokia.iot.connector.utils.mqtt.MqttSubscriber;
 
 
@@ -40,23 +45,36 @@ public class MqttConfiguration {
 	private String mqttSubscriberTopic;
 
 	@Value("${api.key}")
-	private String mqttApiKey;
+	private String pMqttApiKey;
 	
 	@Value("${api.token}")
-	private String mqttApiToken;
+	private String pMqttApiToken;
 
 	@Value("${mqtt.qos}")
 	private Integer qos;
 	
 	@Value("${org.id}")
-	private String orgId;
+	private String pOrgId;
 	
 	@Value("${mqtt.publisher.default.topic}")
 	private String mqttPublisherDefaultTopic;
 	
+	@Autowired
+	IOutboundImpactService outboundService;
+	
 	private boolean cleanSessionProp = true;
 	
-	public static final String APPLICATION_DEVICE_CLASS = "a";
+	private static String publisherClientId = null;
+	
+	public static final String SUBSCRIPTION_APPLICATION_DEVICE_CLASS = "A";
+	
+	public static final String PUBLISHER_USER_AUTH_TOKEN = "12345_ASWss";
+	
+	private static String orgId;
+	
+	private static String mqttApiKey;
+	
+	private static String mqttApiToken;
 
 	public Integer getQos() {
 		return qos;
@@ -79,7 +97,7 @@ public class MqttConfiguration {
 	}
 
 	public void setMqttApiKey(String mqttApiKey) {
-		this.mqttApiKey = mqttApiKey;
+		MqttConfiguration.mqttApiKey = mqttApiKey;
 	}
 
 	public String getMqttApiToken() {
@@ -87,7 +105,7 @@ public class MqttConfiguration {
 	}
 
 	public void setMqttApiToken(String mqttApiToken) {
-		this.mqttApiToken = mqttApiToken;
+		MqttConfiguration.mqttApiToken = mqttApiToken;
 	}
 
 	public String getMqttSubscriberTopic() {
@@ -111,7 +129,7 @@ public class MqttConfiguration {
 	}
 
 	public void setOrgId(String orgId) {
-		this.orgId = orgId;
+		MqttConfiguration.orgId = orgId;
 	}
 
 	public String getMqttPublisherDefaultTopic() {
@@ -122,7 +140,24 @@ public class MqttConfiguration {
 		this.mqttPublisherDefaultTopic = mqttPublisherDefaultTopic;
 	}
 
+	public void reloadPropertyFilePlaceHolders(Properties prop) {
+		mqttApiKey = prop.getProperty(PropertyKeyConstants.API_KEY);
+		mqttApiToken = prop.getProperty(PropertyKeyConstants.API_TOKEN);
+		orgId = prop.getProperty(PropertyKeyConstants.ORG_ID);
+		initConnector();
+		//inbound();
+	}
+	
 	@Bean
+	public String initMqttConf() {
+		orgId = this.pOrgId;
+		mqttApiKey = this.pMqttApiKey;
+		mqttApiToken = this.pMqttApiToken;
+		return orgId;
+	}
+	
+	@Bean
+	@Lazy(value=true)
 	public MessageChannel mqttInputChannel() {
 		return new DirectChannel();
 	}
@@ -133,8 +168,9 @@ public class MqttConfiguration {
 	  */
 	 
 	@Bean
-	public MessageProducer inbound() {
-		String clientId = getClientId(this.orgId,"");
+	@Lazy(value = true)
+	public MqttPahoMessageDrivenChannelAdapter inbound() {
+		String clientId = getClientId(orgId,"",SUBSCRIPTION_APPLICATION_DEVICE_CLASS);
 		LOGGER.debug("Subscribing to topic "+mqttSubscriberTopic+" broker url "+mqttBrokerUrl+" client Id "+clientId);
 		MqttPahoMessageDrivenChannelAdapter adapter = new MqttPahoMessageDrivenChannelAdapter(clientId, mqttClientFactory(), mqttSubscriberTopic);
 		adapter.setConverter(new DefaultPahoMessageConverter());
@@ -145,12 +181,14 @@ public class MqttConfiguration {
 	}
 
 	@Bean
+	@Lazy(value=true)
 	@ServiceActivator(inputChannel = "mqttInputChannel")
 	public MessageHandler handler() {
 		return new MqttSubscriber();
 	}
 
 	@Bean
+	@Lazy(value = true)
 	public MqttPahoClientFactory mqttClientFactory() {
 		LOGGER.debug("apikey as "+mqttApiKey+" token as "+mqttApiToken);
 		DefaultMqttPahoClientFactory factory = new DefaultMqttPahoClientFactory();
@@ -158,7 +196,7 @@ public class MqttConfiguration {
 		factory.setUserName(mqttApiKey);
 		factory.setPassword(mqttApiToken);
 		
-		SSLContext sslContext = null;
+		/*SSLContext sslContext = null;
         //LoggerUtility.info(CLASS_NAME, METHOD, "Provider: " + sslContext.getProvider().getName());
         try {
         	sslContext = SSLContext.getInstance("TLSv1.2");
@@ -169,7 +207,7 @@ public class MqttConfiguration {
 			LOGGER.error("NoSuchAlgorithmException e "+e);
 		}
         
-		factory.setSocketFactory(sslContext.getSocketFactory());
+		factory.setSocketFactory(sslContext.getSocketFactory());*/
 		return factory;
 	}
 
@@ -178,13 +216,29 @@ public class MqttConfiguration {
 		return finalURL;
 	}
 	
+	@Bean
+	@Lazy(value = true)
+	public String initConnector() {
+		LOGGER.debug("initConnector>> Registering connector to watson");
+		try {
+			publisherClientId = outboundService.registerConnectorToWatson();
+			LOGGER.debug("publisherClientId :: "+publisherClientId);
+		} catch(Exception e) {
+			LOGGER.error("Registration of connector failed "+e);
+		}
+		return publisherClientId;
+	}
+	
+	public String getPublisherClientId() {
+		return publisherClientId;
+	}
 	/**
 	 * Mount clientId based on configuration and dynamic attributes
 	 * CliendId is c:<org>:<deviceType>:<instanceId>:<variation>
 	 * @param config
 	 * @return
 	 */
-	public String getClientId(String orgId, String platformId){
+	public String getClientId(String orgId, String platformId, String appDeviceClass){
 		//Ensure temporary uniqueness for CliendId
 		//InstanceId is not enough, many HTTP instances, coming from an external system can use the same connector instanceId
 		//Using a timestamp for that
@@ -194,7 +248,7 @@ public class MqttConfiguration {
 		StringBuilder clientId = new StringBuilder();
 		
 		clientId
-			.append(APPLICATION_DEVICE_CLASS)
+			.append(appDeviceClass)
 			.append(":")
 			.append(orgId)
 			.append(":")

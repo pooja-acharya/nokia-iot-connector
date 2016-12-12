@@ -16,7 +16,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
+import com.nokia.iot.connector.config.RefreshConfiguration;
 import com.nokia.iot.connector.config.credentials.UserCredentials;
+import com.nokia.iot.connector.inbound.domain.ImpactProperties;
 import com.nokia.iot.connector.inbound.domain.MessageOutDevice;
 import com.nokia.iot.connector.inbound.domain.MessageOutDeviceType;
 import com.nokia.iot.connector.inbound.domain.Notification;
@@ -24,6 +26,7 @@ import com.nokia.iot.connector.inbound.domain.Registration;
 import com.nokia.iot.connector.inbound.domain.Report;
 import com.nokia.iot.connector.inbound.domain.Resource;
 import com.nokia.iot.connector.inbound.domain.Response;
+import com.nokia.iot.connector.inbound.domain.WatsonProperties;
 import com.nokia.iot.connector.outbound.service.IOutboundImpactService;
 import com.nokia.iot.connector.outbound.subscription.domain.ImpactSubscription;
 import com.nokia.iot.connector.utils.IRestClient;
@@ -47,6 +50,9 @@ public class RegistrationServiceImpl implements IRegistrationService {
 	
 	@Autowired
 	IOutboundImpactService outboundApi;
+	
+	@Autowired
+	RefreshConfiguration refreshConf;
 
 	Gson gson = new Gson();
 
@@ -77,7 +83,7 @@ public class RegistrationServiceImpl implements IRegistrationService {
 			authorizationMap.put("authorization", "Basic " + callbackAuth);
 			authorizationMap.put("content-type", "application/json");
 			/*registration.put("url",
-					"http://mfusdev15.mformation.com:7001/m2m/impact/callback");*/
+					"http://169.44.15.153:9080/LWM2M/inbound/callback");*/
 			registration.put("url",callbackUrl);
 			registration.put("headers", authorizationMap);
 			String registrationPayload = restClient.getJsonFromObject(registration);
@@ -250,6 +256,30 @@ public class RegistrationServiceImpl implements IRegistrationService {
 			LOGGER.debug("Exception in service " + e);
 		}
 		LOGGER.debug("Publishing callback data is done ");
+	}
+
+	@Override
+	public void saveImpactProperty(ImpactProperties impactProp) throws Exception {
+		LOGGER.debug("RegistrationServiceImpl.saveImpactProperty with "+impactProp.toString());
+		try {
+			refreshConf.writeImpactProperties(impactProp);
+		} catch(Exception e) {
+			LOGGER.debug("Exception in saveImpactProperty " + e);
+			throw new Exception(e.getMessage());
+		}
+	}
+
+	@Override
+	public void saveWatsonProperty(WatsonProperties watsonProp)
+			throws Exception {
+		LOGGER.debug("RegistrationServiceImpl.saveWatsonProperty with "+watsonProp.toString());
+		try {
+			refreshConf.writeWatsonProperties(watsonProp);
+		} catch(Exception e) {
+			LOGGER.debug("Exception in saveWatsonProperty " + e);
+			throw new Exception(e.getMessage());
+		}
+		
 	}
 
 }

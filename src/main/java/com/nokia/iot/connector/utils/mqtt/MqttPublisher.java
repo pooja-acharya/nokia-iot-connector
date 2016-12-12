@@ -20,6 +20,9 @@ public class MqttPublisher {
     
 	MqttClient pubClient;
 
+	public void resetConnection() {
+		disconnect();
+	}
 	public String getTopicName(String deviceType, String deviceId, String eventType, String format) {
 		String topic = null;
 		LOGGER.debug("Framing topic name for deviceType "+deviceType+" deviceId "+deviceId+" eventType "+eventType+" format "+format );
@@ -44,15 +47,7 @@ public class MqttPublisher {
 			LOGGER.error("Exception while setting mqttClient "+e);
 		}
 	}
-	
-	/*public void publish(String payload) {
-		LOGGER.debug("MqttPublisher.publish >> called with parameters "+payload);
-		MyGateway gateway = mqttClient.getPublisherInstance();
-        gateway.sendToMqtt(payload);
-        LOGGER.debug("MqttPublisher.publish >> payload "+payload+" published to mqtt");
 
-	}*/
-	
 	/**
 	 * Publish events to IoTP
 	 * @param topic
@@ -116,7 +111,10 @@ public class MqttPublisher {
 				 */
 				//pubClient = new MqttClient(finalURL, getClientId(orgId, platformId), persistence);	
 				LOGGER.debug("Connectiong to URL "+finalURL);
-				pubClient = new MqttClient(finalURL, mqttClient.getClientId(orgId, platformId), persistence);	
+				String publisherClientId = mqttClient.getPublisherClientId();
+				
+				LOGGER.debug("and publisherClientId as "+publisherClientId);
+				pubClient = new MqttClient(finalURL, publisherClientId, persistence);	
 			}
 		} catch (Exception e) {
 			LOGGER.error("Exception getInstance "+e);

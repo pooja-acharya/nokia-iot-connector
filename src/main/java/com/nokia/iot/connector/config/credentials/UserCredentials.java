@@ -1,29 +1,30 @@
 package com.nokia.iot.connector.config.credentials;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Properties;
 
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.boot.web.support.ErrorPageFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+
+import com.nokia.iot.connector.config.PropertyKeyConstants;
 
 @Configuration
 @PropertySource(value = { "classpath:credentials.properties" })
 public class UserCredentials {
 	
-	private static final Logger LOGGER = LoggerFactory
+	private final Logger LOGGER = LoggerFactory
             .getLogger(UserCredentials.class);
 
 	@Value("${impact.username}")
-	private String impactUsername;
+	private String pImpactUsername;
 	
 	@Value("${impact.password}")
-	private String impactPassword;
+	private String pImpactPassword;
 	
 	@Value("${impact.callback.username}")
 	private String impactCallbackUsername;
@@ -32,37 +33,25 @@ public class UserCredentials {
 	private String impactCallbackPassword;
 	
 	@Value("${api.key}")
-	private String apiKey;
+	private String pApiKey;
 	
 	@Value("${api.token}")
-	private String apiToken;
+	private String pApiToken;
 	
-	private String authorization;
+	private static String authorization;
 	
-	private String watsonAuthorization;
-
-	public String getImpactUsername() {
-		return impactUsername;
-	}
-
-	public void setImpactUsername(String impactUsername) {
-		this.impactUsername = impactUsername;
-	}
-
-	public String getImpactPassword() {
-		return impactPassword;
-	}
-
-	public void setImpactPassword(String impactPassword) {
-		this.impactPassword = impactPassword;
-	}
+	private static String watsonAuthorization;
+	
+	private static String impactUsername;
+	
+	private static String impactPassword;
+	
+	private static String apiKey;
+	
+	private static String apiToken;
 	
 	public String getImpactCallbackUsername() {
 		return impactCallbackUsername;
-	}
-
-	public void setImpactCallbackUsername(String impactCallbackUsername) {
-		this.impactCallbackUsername = impactCallbackUsername;
 	}
 
 	public String getImpactCallbackPassword() {
@@ -73,30 +62,36 @@ public class UserCredentials {
 		this.impactCallbackPassword = impactCallbackPassword;
 	}
 	
+	public void reloadPropertyPlaceHolders(Properties prop) {
+		impactUsername = prop.getProperty(PropertyKeyConstants.IMPACT_USERNAME);
+		impactPassword = prop.getProperty(PropertyKeyConstants.IMPACT_PASSWORD);
+		apiKey = prop.getProperty(PropertyKeyConstants.API_KEY);
+		apiToken = prop.getProperty(PropertyKeyConstants.API_TOKEN);
+		getImpactAuthorization();
+		getWatsonAuthorization();
+	}
+	
 	@Bean
-	public String setImpactAuthorization() {
+	public String initConf() {
+		impactUsername = pImpactUsername;
+		impactPassword = pImpactPassword;
+		apiKey = pApiKey;
+		apiToken = pApiToken;
+		return impactUsername;
+	}
+	
+	public String getImpactAuthorization() {
 		String username = decodeBase64(impactUsername);
 		String password = decodeBase64(impactPassword);
-		this.authorization = encodeBase64(username+":"+password);
-		return this.authorization;
+		authorization = encodeBase64(username+":"+password);
+		return authorization;
 	}
 	
-	@Bean
-	public String getImpactAuthorization() {
-		return this.authorization;
-	}
-	
-	@Bean
-	public String setWatsonAuthorization() {
+	public String getWatsonAuthorization() {
 		String username = apiKey;
 		String password = apiToken;
-		this.watsonAuthorization = encodeBase64(username+":"+password);
-		return this.watsonAuthorization;
-	}
-	
-	@Bean
-	public String getWatsonAuthorization() {
-		return this.watsonAuthorization;
+		watsonAuthorization = encodeBase64(username+":"+password);
+		return watsonAuthorization;
 	}
 	
 	public String decodeBase64(String value) {
@@ -122,16 +117,4 @@ public class UserCredentials {
 			return value;
 		}
 	}
-	/*@Bean
-	public ErrorPageFilter errorPageFilter() {
-	    return new ErrorPageFilter();
-	}
-
-	@Bean
-	public FilterRegistrationBean disableSpringBootErrorFilter(ErrorPageFilter filter) {
-	    FilterRegistrationBean filterRegistrationBean = new FilterRegistrationBean();
-	    filterRegistrationBean.setFilter(filter);
-	    filterRegistrationBean.setEnabled(false);
-	    return filterRegistrationBean;
-	}*/
 }
