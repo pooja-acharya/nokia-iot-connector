@@ -149,7 +149,7 @@ public class RestClient implements IRestClient {
 	@Override
 	public ResponseEntity<String> doGet(String uri, String restServerUrl,
 			String authorization, RestTemplate restTemplate) {
-		LOGGER.debug("doGet with Parameters :: uri {} " + uri+" authorization {} "+authorization);
+		LOGGER.debug("doGet with Parameters :: server {} "+restServerUrl+" uri {} " + uri+" authorization {} "+authorization);
 		headers.clear();
 		headers.add("Authorization", "Basic " + authorization);
 		headers.setContentType(MediaType.APPLICATION_JSON);
@@ -178,7 +178,7 @@ public class RestClient implements IRestClient {
 	@Override
 	public ResponseEntity<String> doPost(String uri, String payload,
 			String restServerUrl, String authorization, RestTemplate restTemplate) {
-		LOGGER.debug("doPost with Parameters :: uri {} " + uri + " payload {} "
+		LOGGER.debug("doPost with Parameters :: server {} "+restServerUrl+" uri {} " + uri + " payload {} "
 				+ payload+" authorization {} "+authorization);
 		headers.clear();
 		headers.add("Authorization", "Basic " + authorization);
@@ -209,7 +209,7 @@ public class RestClient implements IRestClient {
 	@Override
 	public ResponseEntity<String> doPut(String uri, String payload,
 			String restServerUrl, String authorization, RestTemplate restTemplate) {
-		LOGGER.error("doPut with Parameters :: uri {} " + uri + " payload {} "
+		LOGGER.error("doPut with Parameters :: server {} "+restServerUrl+" uri {} " + uri + " payload {} "
 				+ payload + " authorization {} " + authorization);
 		headers.clear();
 		headers.add("Authorization", "Basic " + authorization);
@@ -238,7 +238,7 @@ public class RestClient implements IRestClient {
 	@Override
 	public ResponseEntity<String> doDelete(String uri, String payload,
 			String restServerUrl, String authorization, RestTemplate restTemplate) {
-		LOGGER.debug("doDelete with Parameters :: uri {} " + uri
+		LOGGER.debug("doDelete with Parameters :: server {} "+restServerUrl+" uri {} " + uri
 				+ " payload {} " + payload);
 		headers.clear();
 		headers.add("Authorization", "Basic " + authorization);

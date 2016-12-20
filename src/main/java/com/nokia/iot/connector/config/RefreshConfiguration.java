@@ -10,8 +10,6 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter;
 import org.springframework.stereotype.Service;
 
 import com.nokia.iot.connector.config.credentials.UserCredentials;
@@ -35,9 +33,6 @@ public class RefreshConfiguration {
 	
 	@Autowired
 	MqttPublisher publisherConf;
-	
-	@Autowired @Lazy
-	MqttPahoMessageDrivenChannelAdapter subscriber;
 	
 	@Autowired
 	IRestClient restConf;
@@ -68,14 +63,14 @@ public class RefreshConfiguration {
 			externalProp = loadPropertyFile();
 			LOGGER.debug("All properties are read as "+externalProp);
 			
+			//Set User credentials
+			credentials.reloadPropertyPlaceHolders(externalProp);
+			
 			//Set Rest Client Configurations
 			restConf.reloadPropertyFilePlaceHolders(externalProp);
 			
 			//Set Mqtt Configuration
 			mqttConf.reloadPropertyFilePlaceHolders(externalProp);
-			/*MqttPahoMessageDrivenChannelAdapter subs = mqttConf.inbound();
-			subs.start();*/
-			subscriber.start();
 			
 			//Reset publisher connection if already connected
 			publisherConf.resetConnection();
@@ -98,15 +93,13 @@ public class RefreshConfiguration {
 			
 			//Set Mqtt Configuration
 			mqttConf.reloadPropertyFilePlaceHolders(externalProp);
-			/*MqttPahoMessageDrivenChannelAdapter subs = mqttConf.inbound();
-			subs.start();*/
-			subscriber.start();
 			
 			//Reset publisher connection if already connected
 			publisherConf.resetConnection();
 			
 			//Set Rest Client Configurations
 			restConf.reloadPropertyFilePlaceHolders(externalProp);
+			
 		} catch(Exception e) {
 			LOGGER.error("Exception in reloadAllConfigurations "+e);
 		}

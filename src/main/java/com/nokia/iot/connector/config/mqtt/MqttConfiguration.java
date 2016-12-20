@@ -7,32 +7,33 @@ import java.util.Properties;
 
 import javax.net.ssl.SSLContext;
 
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.integration.annotation.IntegrationComponentScan;
-import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.channel.DirectChannel;
-import org.springframework.integration.core.MessageProducer;
 import org.springframework.integration.mqtt.core.DefaultMqttPahoClientFactory;
 import org.springframework.integration.mqtt.core.MqttPahoClientFactory;
 import org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter;
 import org.springframework.integration.mqtt.support.DefaultPahoMessageConverter;
 import org.springframework.messaging.MessageChannel;
-import org.springframework.messaging.MessageHandler;
 
 import com.nokia.iot.connector.config.PropertyKeyConstants;
+import com.nokia.iot.connector.inbound.IMqttPayloadConverter;
 import com.nokia.iot.connector.outbound.service.IOutboundImpactService;
 import com.nokia.iot.connector.utils.mqtt.MqttSubscriber;
 
 
 @Configuration
-@IntegrationComponentScan
 @PropertySource(value = { "classpath:mqtt.properties" })
 public class MqttConfiguration {
 	
@@ -62,9 +63,12 @@ public class MqttConfiguration {
 	@Autowired
 	IOutboundImpactService outboundService;
 	
+	@Autowired
+	IMqttPayloadConverter mqttConverter;
+	
 	private boolean cleanSessionProp = true;
 	
-	private static String publisherClientId = null;
+	private static String publisherClientId;
 	
 	public static final String SUBSCRIPTION_APPLICATION_DEVICE_CLASS = "A";
 	
@@ -145,9 +149,35 @@ public class MqttConfiguration {
 		mqttApiToken = prop.getProperty(PropertyKeyConstants.API_TOKEN);
 		orgId = prop.getProperty(PropertyKeyConstants.ORG_ID);
 		initConnector();
-		//inbound();
+		initSubscriber();
 	}
 	
+	private void initSubscriber() {
+		LOGGER.debug("Subscribing to client Id "+getClientId(
+						orgId, "", SUBSCRIPTION_APPLICATION_DEVICE_CLASS));
+		LOGGER.debug("and to topic "+mqttSubscriberTopic+" and url "+getMessagingUrl(orgId));
+		 MqttClient sampleClient;
+			try {
+				sampleClient = new MqttClient(getMessagingUrl(orgId), getClientId(
+						orgId, "", SUBSCRIPTION_APPLICATION_DEVICE_CLASS),
+						new MemoryPersistence());
+				MqttConnectOptions connOpts = new MqttConnectOptions();
+				connOpts.setCleanSession(isCleanSessionProp());
+				connOpts.setUserName(mqttApiKey);
+				connOpts.setPassword(mqttApiToken.toCharArray());
+				
+				Properties sslClientProps = new Properties();
+				sslClientProps.setProperty("com.ibm.ssl.protocol", "TLSv1.2");
+				connOpts.setSSLProperties(sslClientProps);
+				
+				sampleClient.connect(connOpts);
+				sampleClient.subscribe(mqttSubscriberTopic, qos);
+				sampleClient.setCallback(new MqttSubscriber(mqttConverter));
+			} catch (MqttException e) {
+				LOGGER.error("Error while subscribing to url "+getMessagingUrl(orgId)+" exception "+e);
+			}
+	}
+
 	@Bean
 	public String initMqttConf() {
 		orgId = this.pOrgId;
@@ -156,18 +186,12 @@ public class MqttConfiguration {
 		return orgId;
 	}
 	
-	@Bean
-	@Lazy(value=true)
-	public MessageChannel mqttInputChannel() {
-		return new DirectChannel();
-	}
-	
 	 /**
 	  * * Subscribe to topic
 	  * @return
 	  */
 	 
-	@Bean
+	/*@Bean
 	@Lazy(value = true)
 	public MqttPahoMessageDrivenChannelAdapter inbound() {
 		String clientId = getClientId(orgId,"",SUBSCRIPTION_APPLICATION_DEVICE_CLASS);
@@ -177,18 +201,15 @@ public class MqttConfiguration {
 		adapter.setOutputChannel(mqttInputChannel());
 		adapter.setCompletionTimeout(5000);
 		adapter.setQos(qos);
+		adapter.setRecoveryInterval(100);
 		return adapter;
 	}
 
-	@Bean
-	@Lazy(value=true)
-	@ServiceActivator(inputChannel = "mqttInputChannel")
-	public MessageHandler handler() {
-		return new MqttSubscriber();
+	public MessageChannel mqttInputChannel() {
+		return new DirectChannel();
 	}
 
 	@Bean
-	@Lazy(value = true)
 	public MqttPahoClientFactory mqttClientFactory() {
 		LOGGER.debug("apikey as "+mqttApiKey+" token as "+mqttApiToken);
 		DefaultMqttPahoClientFactory factory = new DefaultMqttPahoClientFactory();
@@ -196,7 +217,7 @@ public class MqttConfiguration {
 		factory.setUserName(mqttApiKey);
 		factory.setPassword(mqttApiToken);
 		
-		/*SSLContext sslContext = null;
+		SSLContext sslContext = null;
         //LoggerUtility.info(CLASS_NAME, METHOD, "Provider: " + sslContext.getProvider().getName());
         try {
         	sslContext = SSLContext.getInstance("TLSv1.2");
@@ -207,9 +228,9 @@ public class MqttConfiguration {
 			LOGGER.error("NoSuchAlgorithmException e "+e);
 		}
         
-		factory.setSocketFactory(sslContext.getSocketFactory());*/
+		factory.setSocketFactory(sslContext.getSocketFactory());
 		return factory;
-	}
+	}*/
 
 	public String getMessagingUrl(String orgId) {
 		String finalURL = mqttBrokerUrl.replaceAll("<org_id>", orgId); ;

@@ -147,7 +147,7 @@ public class RegistrationServiceImpl implements IRegistrationService {
 						LOGGER.debug("publishing REPORT(observation) payload as "
 								+ responsePayload);
 						for(Resource resource : response.getResources()) {
-							if(StringUtils.isBlank(resource.getResource())) {
+							if(StringUtils.isBlank(resource.getResource()) || "/".equals(resource.getResource())) {
 								ResponseEntity<String> subscriptionResponse = null;
 								
 								LOGGER.debug("Response came for Get End point details, hence collecting all resources and sending subscription request for all resources");
