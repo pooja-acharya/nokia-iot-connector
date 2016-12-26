@@ -1,11 +1,7 @@
 package com.nokia.iot.connector.config.mqtt;
 
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.Properties;
-
-import javax.net.ssl.SSLContext;
 
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
@@ -15,20 +11,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.integration.channel.DirectChannel;
-import org.springframework.integration.mqtt.core.DefaultMqttPahoClientFactory;
-import org.springframework.integration.mqtt.core.MqttPahoClientFactory;
-import org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter;
-import org.springframework.integration.mqtt.support.DefaultPahoMessageConverter;
-import org.springframework.messaging.MessageChannel;
 
 import com.nokia.iot.connector.config.PropertyKeyConstants;
-import com.nokia.iot.connector.inbound.IMqttPayloadConverter;
 import com.nokia.iot.connector.outbound.service.IOutboundImpactService;
 import com.nokia.iot.connector.utils.mqtt.MqttSubscriber;
 
@@ -64,7 +52,7 @@ public class MqttConfiguration {
 	IOutboundImpactService outboundService;
 	
 	@Autowired
-	IMqttPayloadConverter mqttConverter;
+	MqttSubscriber subscriber;
 	
 	private boolean cleanSessionProp = true;
 	
@@ -172,7 +160,7 @@ public class MqttConfiguration {
 				
 				sampleClient.connect(connOpts);
 				sampleClient.subscribe(mqttSubscriberTopic, qos);
-				sampleClient.setCallback(new MqttSubscriber(mqttConverter));
+				sampleClient.setCallback(subscriber);
 			} catch (MqttException e) {
 				LOGGER.error("Error while subscribing to url "+getMessagingUrl(orgId)+" exception "+e);
 			}
