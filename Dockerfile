@@ -1,6 +1,6 @@
 FROM registry.ng.bluemix.net/ibmliberty:latest
 
-EXPOSE 9080
+EXPOSE 80:9080
 
 COPY application.properties /opt/ibm/wlp/
 
